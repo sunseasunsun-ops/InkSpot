@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>InkSpot</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#000;--c1:#111;--c2:#1a1a1a;--bd:#222;--t:#fff;--t2:#999;--t3:#555;--ac:#8b5cf6;--abg:rgba(139,92,246,.12);--gn:#22c55e;--yw:#eab308;--rd:#ef4444}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t);height:100vh;height:100dvh;overflow:hidden}
+.app{max-width:430px;margin:0 auto;height:100%;display:flex;flex-direction:column;overflow:hidden}
+.s{display:none;flex-direction:column;height:100%;overflow:hidden}.s.on{display:flex}
+.sc{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}.sc::-webkit-scrollbar{display:none}
+.nv{display:flex;border-top:1px solid var(--bd);background:var(--bg);flex-shrink:0}
+.ni{flex:1;padding:10px 0 8px;display:flex;flex-direction:column;align-items:center;gap:2px;background:none;border:none;color:var(--t3);font-size:10px;font-family:inherit;cursor:pointer}.ni.on{color:var(--ac)}.ni svg{width:20px;height:20px}
+.bt{padding:14px;border-radius:14px;border:none;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;width:100%;transition:.15s}
+.bp{background:linear-gradient(135deg,#7c3aed,#8b5cf6,#a78bfa);color:#fff}.bp:active{transform:scale(.98)}
+.bo{background:none;border:1px solid var(--bd);color:var(--t2)}.bgg{background:var(--c1);color:var(--t)}
+.iw{background:var(--c1);border-radius:14px;padding:12px 14px;margin-bottom:10px;border:1px solid transparent}.iw:focus-within{border-color:var(--ac)}
+.iw label{display:block;font-size:10px;color:var(--t3);margin-bottom:3px;font-weight:500}
+.iw input,.iw textarea{width:100%;background:none;border:none;color:var(--t);font-family:inherit;font-size:14px;outline:none;resize:none}.iw textarea{min-height:60px}
+.tg{display:inline-block;padding:6px 14px;border-radius:50px;font-size:11px;font-weight:500;border:1px solid var(--bd);color:var(--t2);cursor:pointer;user-select:none;transition:.15s}.tg.on{background:var(--ac);color:#fff;border-color:var(--ac)}
+.cd{background:var(--c1);border-radius:18px;padding:14px;margin-bottom:10px;cursor:pointer;border:1px solid transparent;transition:.15s}.cd:active{transform:scale(.98)}
+.av{width:48px;height:48px;border-radius:50%;background:var(--c2);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;overflow:hidden}.av.sq{border-radius:12px}.av img{width:100%;height:100%;object-fit:cover}
+.st{padding:4px 10px;border-radius:50px;font-size:10px;font-weight:600}
+.st.pending{background:rgba(234,179,8,.15);color:var(--yw)}.st.accepted{background:rgba(34,197,94,.15);color:var(--gn)}.st.declined{background:rgba(239,68,68,.15);color:var(--rd)}
+.mp{width:100%;height:220px;border-radius:16px;overflow:hidden;margin-bottom:12px}
+.leaflet-container{background:#1a1a2e!important}.leaflet-control-attribution,.leaflet-control-zoom{display:none!important}
+.mcm{width:14px;height:14px;background:var(--ac);border-radius:50%;border:2px solid #000;box-shadow:0 0 10px rgba(139,92,246,.6)}
+.hd{padding:16px 20px 12px;flex-shrink:0}
+.bk{background:none;border:none;color:var(--t2);font-size:13px;font-family:inherit;cursor:pointer;padding:0}
+.pg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.pg div,.pg img{aspect-ratio:1;background:var(--c2);border-radius:10px;object-fit:cover;width:100%}
+.gr{display:flex;gap:8px;overflow-x:auto}.gr::-webkit-scrollbar{display:none}.gr div,.gr img{width:72px;height:72px;border-radius:10px;background:var(--c2);flex-shrink:0;object-fit:cover}
+.stt{font-size:11px;font-weight:600;color:var(--t3);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px}
+.ir{display:flex;justify-content:space-between;padding:8px 0;font-size:12px;border-bottom:1px solid rgba(255,255,255,.04)}.ir:last-child{border:none}.ir .l{color:var(--t3)}.ir .v{color:var(--t);font-weight:500}.ir .v.ac{color:var(--ac)}
+.rc{background:var(--c1);border-radius:14px;padding:12px;margin-bottom:8px}
+.hi{height:180px;position:relative;flex-shrink:0;overflow:hidden}
+.hi img{width:100%;height:100%;object-fit:cover}
+.hi .bk{position:absolute;top:14px;left:14px;background:rgba(0,0,0,.6);padding:6px 12px;border-radius:50px;color:#fff;font-size:12px;z-index:2;backdrop-filter:blur(10px)}
+.hig{position:absolute;bottom:0;left:0;right:0;height:100px;background:linear-gradient(transparent,#000)}
+.ss{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px;text-align:center;height:100%}
+.si{width:80px;height:80px;border-radius:50%;background:var(--abg);display:flex;align-items:center;justify-content:center;margin-bottom:20px;font-size:36px;color:var(--ac)}
+.sb{background:var(--c1);border-radius:14px;padding:12px 14px;display:flex;align-items:center;gap:10px;margin:0 20px 12px;border:1px solid transparent}.sb:focus-within{border-color:var(--ac)}
+.sb input{flex:1;background:none;border:none;color:var(--t);font-family:inherit;font-size:13px;outline:none}.sb input::placeholder{color:var(--t3)}
+.fb{display:flex;gap:6px;padding:0 20px;overflow-x:auto;margin-bottom:12px}.fb::-webkit-scrollbar{display:none}
+.f{display:flex}.g8{gap:8px}.g10{gap:10px}.g12{gap:12px}.ai{align-items:center}.jb{justify-content:space-between}.f1{flex:1}.tc{text-align:center}
+.mt4{margin-top:4px}.mt8{margin-top:8px}.mt12{margin-top:12px}.mt16{margin-top:16px}.mb4{margin-bottom:4px}.mb8{margin-bottom:8px}.mb12{margin-bottom:12px}.mb16{margin-bottom:16px}.mb20{margin-bottom:20px}
+.p{padding:0 20px}
+.xs{font-size:11px}.sm{font-size:13px}.md{font-size:15px}.lg{font-size:18px}.xl{font-size:24px}
+.fw7{font-weight:700}.fw6{font-weight:600}
+.ct2{color:var(--t2)}.ct3{color:var(--t3)}.cac{color:var(--ac)}
+.ib{background:var(--c1);border-radius:14px;padding:14px;margin-bottom:16px}
+.ig-link{display:inline-flex;align-items:center;gap:6px;color:var(--ac);font-size:12px;font-weight:600;text-decoration:none;padding:6px 14px;border-radius:50px;background:var(--abg)}
+.checklist{list-style:none;padding:0}.checklist li{padding:8px 0;font-size:12px;color:var(--t2);display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(255,255,255,.04)}.checklist li:last-child{border:none}.checklist li::before{content:'☐';color:var(--ac);font-size:14px}
+@keyframes fi{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}.s.on .sc>*{animation:fi .3s ease}
+@keyframes pu{0%,100%{opacity:1}50%{opacity:.5}}.pu{animation:pu 2s infinite}
+.msg-me{align-self:flex-end;max-width:80%}.msg-them{align-self:flex-start;max-width:80%}
+.msg-me .bubble{background:var(--ac);color:#fff;padding:10px 14px;border-radius:14px 14px 4px 14px;font-size:13px;line-height:1.5}
+.msg-them .bubble{background:var(--c1);color:var(--t);padding:10px 14px;border-radius:14px 14px 14px 4px;font-size:13px;line-height:1.5}
+.lic-box{border-radius:12px;padding:10px 12px;margin-bottom:8px}
+.lic-low{background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2)}
+.lic-medium{background:rgba(234,179,8,.08);border:1px solid rgba(234,179,8,.2)}
+.lic-high{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2)}
+.star-rate{font-size:24px;cursor:pointer;transition:.15s}.star-rate:hover{transform:scale(1.2)}
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--gn);color:#fff;padding:10px 24px;border-radius:50px;font-size:13px;font-weight:600;z-index:999;animation:toastIn .3s ease}
+@keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+.pge{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:16px}
+.pge .phi{aspect-ratio:1;border-radius:10px;overflow:hidden;position:relative}
+.pge .phi img{width:100%;height:100%;object-fit:cover}
+.pge .phi .phd{position:absolute;top:4px;right:4px;width:22px;height:22px;border-radius:50%;background:rgba(239,68,68,.9);color:#fff;border:none;font-size:11px;cursor:pointer;display:none;align-items:center;justify-content:center}
+.pge .phi:hover .phd{display:flex}
+.pge .pha{aspect-ratio:1;border-radius:10px;border:1.5px dashed var(--bd);display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--t3);cursor:pointer;transition:.15s;gap:2px}
+.pge .pha:hover{border-color:var(--ac);color:var(--ac)}
+.ave{position:relative;cursor:pointer}
+.ave:hover::after{content:'📷';position:absolute;inset:0;border-radius:50%;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;font-size:16px}
+.ave.sqe:hover::after{border-radius:12px}
+.tgr{display:flex;align-items:center;justify-content:space-between;padding:10px 0}
+.tsw{width:44px;height:24px;border-radius:12px;background:var(--c2);border:none;cursor:pointer;position:relative;transition:.2s}
+.tsw.on{background:var(--ac)}
+.tsw::after{content:'';position:absolute;width:18px;height:18px;border-radius:50%;background:#fff;top:3px;left:3px;transition:.2s}
+.tsw.on::after{left:23px}
+.studio-thumb{width:64px;height:64px;border-radius:12px;overflow:hidden;flex-shrink:0}
+.studio-thumb img{width:100%;height:100%;object-fit:cover}
+</style>
+</head>
+<body>
+<div class="app">
+
+<div class="s on" id="s-welcome">
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px">
+<div style="width:80px;height:80px;border-radius:20px;background:linear-gradient(135deg,#7c3aed,#a78bfa);display:flex;align-items:center;justify-content:center;margin-bottom:24px"><svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div>
+<h1 style="font-size:32px;font-weight:800;margin-bottom:6px">InkSpot</h1>
+<p class="ct2 sm mb8">Find your next guest spot</p>
+<p class="xs ct3 mb20" style="max-width:260px;line-height:1.5;text-align:center">Connecting traveling tattoo artists with studios offering guest spots across Europe</p>
+<div style="width:100%"><button class="bt bp mb8" onclick="go('register')">Create Account</button><button class="bt bo" onclick="go('login')">Sign In</button></div>
+</div></div>
+
+<div class="s" id="s-register"><div class="hd"><button class="bk" onclick="go('welcome')">← Back</button></div>
+<div class="sc p"><h2 class="xl fw7 mb4">Create Account</h2><p class="ct2 xs mb20">Join the global tattoo community</p>
+<div class="iw"><label>Full Name</label><input id="rn" value="Vlad Shevchenko"></div>
+<div class="iw"><label>Email</label><input type="email" id="re" placeholder="you@email.com"></div>
+<div class="iw"><label>Password</label><input type="password" placeholder="Min 6 characters"></div>
+<p class="ct3 xs fw6 mb8 mt16">I am a...</p>
+<div class="f g10 mb20">
+<div class="f1 cd tc" id="ra" onclick="pR('a')" style="border:2px solid var(--ac);background:var(--abg)"><div style="font-size:28px;margin-bottom:4px">🎨</div><div class="xs fw6 cac">Tattoo Artist</div></div>
+<div class="f1 cd tc" id="rs" onclick="pR('s')"><div style="font-size:28px;margin-bottom:4px">🏠</div><div class="xs fw6 ct2">Studio Owner</div></div>
+</div>
+<div id="studioRegFields" style="display:none">
+<div class="iw"><label>Studio Name</label><input id="rsn" placeholder="Your studio name"></div>
+<div class="iw"><label>Address</label><input id="rsa" placeholder="Street, District, City"></div>
+<div class="iw"><label>Phone</label><input id="rsp" placeholder="+49..."></div>
+</div>
+<button class="bt bp mb20" onclick="doReg()">Continue</button></div></div>
+
+<div class="s" id="s-login"><div class="hd"><button class="bk" onclick="go('welcome')">← Back</button></div>
+<div class="sc p"><h2 class="xl fw7 mb4">Welcome Back</h2><p class="ct2 xs mb20">Sign in to continue</p>
+<div class="iw"><label>Email</label><input type="email" placeholder="you@email.com"></div>
+<div class="iw"><label>Password</label><input type="password" placeholder="Password"></div>
+<p class="cac xs mb16" style="text-align:right;cursor:pointer">Forgot Password?</p>
+<p class="ct3 xs fw6 mb8">Sign in as...</p>
+<div class="f g10 mb16">
+<div class="f1 cd tc" id="la" onclick="pL('a')" style="border:2px solid var(--ac);background:var(--abg)"><div style="font-size:20px;margin-bottom:2px">🎨</div><div class="xs fw6 cac">Artist</div></div>
+<div class="f1 cd tc" id="ls" onclick="pL('s')"><div style="font-size:20px;margin-bottom:2px">🏠</div><div class="xs fw6 ct2">Studio</div></div>
+</div>
+<button class="bt bp mb12" onclick="doLogin()">Sign In</button></div></div>
+
+<div class="s" id="s-explore">
+<div class="hd"><div class="f jb ai mb4"><h2 class="lg fw7">Explore</h2><select id="cPick" onchange="chgC(this.value)" style="background:var(--abg);color:var(--ac);border:1px solid rgba(139,92,246,.3);border-radius:50px;padding:5px 12px;font-size:11px;font-weight:600;font-family:inherit;cursor:pointer;outline:none"></select></div><div id="licBar"></div></div>
+<div class="sb"><span>🔍</span><input placeholder="Search studio, style, district..." id="si" oninput="filt()"></div>
+<div class="fb" id="fl"></div>
+<div class="sc"><div class="p mb8"><div class="mp" id="map"></div></div><div class="p" id="sl"></div></div>
+<nav class="nv" id="n1"></nav></div>
+
+<div class="s" id="s-detail"><div class="hi" id="dtlHi"><button class="bk" onclick="go('explore')">← Back</button><div class="hig"></div></div><div class="sc p" id="db"></div></div>
+
+<div class="s" id="s-send"><div class="hd f jb ai"><button class="bk" onclick="go('detail')">← Back</button><span class="sm fw6">Guest Spot Request</span><div style="width:40px"></div></div><div class="sc p" id="snb"></div></div>
+
+<div class="s" id="s-sent"><div class="ss"><div class="si">✓</div><h2 class="lg fw7 mb8">Request Sent!</h2><p class="ct2 sm mb20" id="sm"></p><button class="bt bgg mb8" onclick="go('reqs')">View My Requests</button><button class="bt bo" onclick="go('explore')">Back to Explore</button></div></div>
+
+<div class="s" id="s-reqs"><div class="hd"><h2 class="lg fw7">My Requests</h2></div><div class="fb" id="rt"></div><div class="sc p" id="rl"></div><nav class="nv" id="n2"></nav></div>
+
+<div class="s" id="s-reqinfo"><div class="hd"><button class="bk" onclick="go('reqs')">← Back</button></div><div class="sc p" id="rib"></div></div>
+
+<div class="s" id="s-chat">
+<div class="hd f jb ai"><button class="bk" onclick="go(D._cb||'reqs')">← Back</button><span class="sm fw6" id="chatT"></span><div style="width:40px"></div></div>
+<div class="sc p" id="chatM" style="display:flex;flex-direction:column;gap:8px;padding-bottom:10px"></div>
+<div style="padding:10px 20px;border-top:1px solid var(--bd);display:flex;gap:8px;flex-shrink:0">
+<input id="chatI" placeholder="Type a message..." style="flex:1;background:var(--c1);border:1px solid var(--bd);border-radius:12px;padding:10px 14px;color:var(--t);font-family:inherit;font-size:13px;outline:none" onkeydown="if(event.key==='Enter')sndM()">
+<button onclick="sndM()" style="background:var(--ac);border:none;border-radius:12px;padding:10px 16px;color:#fff;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer">Send</button>
+</div></div>
+
+<div class="s" id="s-prof"><div class="hd f jb ai"><span class="sm fw6">My Profile</span><button class="cac xs fw6" style="background:none;border:none;cursor:pointer;font-family:inherit" onclick="go('edit')">Edit</button></div><div class="sc p" id="pb"></div><nav class="nv" id="n3"></nav></div>
+
+<div class="s" id="s-edit"><div class="hd f jb ai"><button class="bk" onclick="go('prof')">Cancel</button><span class="sm fw6">Edit Profile</span><button class="cac sm fw6" style="background:none;border:none;cursor:pointer;font-family:inherit" onclick="sP()">Save</button></div><div class="sc p" id="eb"></div></div>
+
+<div class="s" id="s-sdash"><div class="hd"><h2 class="lg fw7">Incoming Requests</h2><p class="ct2 xs mt4" id="src"></p></div><div class="sc p" id="srl"></div><nav class="nv" id="n4"></nav></div>
+
+<div class="s" id="s-rdtl"><div class="hd"><button class="bk" onclick="go('sdash')">← Back</button></div><div class="sc p" id="rdb"></div></div>
+
+<div class="s" id="s-sprof"><div class="hd f jb ai"><span class="sm fw6">Studio Profile</span><button class="cac xs fw6" style="background:none;border:none;cursor:pointer;font-family:inherit" onclick="go('sedit')">Edit</button></div><div class="sc p" id="spb"></div><nav class="nv" id="n5"></nav></div>
+
+<div class="s" id="s-sedit"><div class="hd f jb ai"><button class="bk" onclick="go('sprof')">Cancel</button><span class="sm fw6">Edit Studio</span><button class="cac sm fw6" style="background:none;border:none;cursor:pointer;font-family:inherit" onclick="sSP()">Save</button></div><div class="sc p" id="seb"></div></div>
+
+</div>
+<script>
+var IG='https://www.instagram.com/shev.chenko_tattoo';
+
+// Real tattoo portfolio photos
+var PH=[
+'https://images.unsplash.com/photo-1611501275019-9b5cda994e8d?w=300&h=300&fit=crop',
+'https://images.unsplash.com/photo-1590246815117-0b8e4fa2af76?w=300&h=300&fit=crop',
+'https://images.unsplash.com/photo-1598371839696-5c5bb00bdc28?w=300&h=300&fit=crop',
+'https://images.unsplash.com/photo-1562962230-16e4623d36e6?w=300&h=300&fit=crop',
+'https://images.unsplash.com/photo-1569466896818-335b1bedfcce?w=300&h=300&fit=crop',
+'https://images.unsplash.com/photo-1608731267464-c0c889c2ff1e?w=300&h=300&fit=crop'
+];
+
+var EXTRA_PH=[
+'https://images.unsplash.com/photo-1542396601-dca920ea2807?w=300&h=300&fit=crop',
+'https://images.unsplash.com/photo-1509281373149-e957c6296406?w=300&h=300&fit=crop',
+'https://images.unsplash.com/photo-1607538842788-e65a79aa5039?w=300&h=300&fit=crop',
+'https://images.unsplash.com/photo-1568515045052-f9a854d70bfd?w=300&h=300&fit=crop'
+];
+
+// Studio interior/exterior photos
+var STPH=[
+'https://images.unsplash.com/photo-1565058379802-bbe93b2f703a?w=400&h=400&fit=crop',
+'https://images.unsplash.com/photo-1514539079130-25950c84af65?w=400&h=400&fit=crop',
+'https://images.unsplash.com/photo-1604881991720-f91add269bed?w=400&h=400&fit=crop',
+'https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?w=400&h=400&fit=crop',
+'https://images.unsplash.com/photo-1600948836101-f9ffda59d250?w=400&h=400&fit=crop',
+'https://images.unsplash.com/photo-1580618672591-eb180b1a973f?w=400&h=400&fit=crop'
+];
+
+// Studio cover/header images
+var COVERS=[
+'https://images.unsplash.com/photo-1598371839696-5c5bb00bdc28?w=600&h=300&fit=crop',
+'https://images.unsplash.com/photo-1565058379802-bbe93b2f703a?w=600&h=300&fit=crop',
+'https://images.unsplash.com/photo-1514539079130-25950c84af65?w=600&h=300&fit=crop',
+'https://images.unsplash.com/photo-1604881991720-f91add269bed?w=600&h=300&fit=crop',
+'https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?w=600&h=300&fit=crop'
+];
+
+// Artist avatar photos
+var AVATARS=[
+'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&crop=face',
+'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&h=200&fit=crop&crop=face',
+'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&h=200&fit=crop&crop=face',
+'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200&h=200&fit=crop&crop=face'
+];
+
+var CC=[
+{c:'DE',n:'Germany',lat:52.5,lng:13.4,lic:{lv:'low',t:'No specific tattoo license required. Must comply with hygiene standards (DIN EN 17169). Register as Gewerbe. EU REACH ink rules apply.'}},
+{c:'CZ',n:'Czech Republic',lat:50.08,lng:14.44,lic:{lv:'medium',t:'⚠️ Trade license (Živnostenský list) required. Register as "Kosmetické služby".'}},
+{c:'ES',n:'Spain',lat:41.39,lng:2.17,lic:{lv:'medium',t:'⚠️ Municipal health license required. Register with local Ayuntamiento.'}},
+{c:'PT',n:'Portugal',lat:38.72,lng:-9.14,lic:{lv:'low',t:'No specific tattoo license. Must comply with DGS hygiene guidelines.'}},
+{c:'FR',n:'France',lat:48.86,lng:2.35,lic:{lv:'high',t:'🔴 Mandatory 21h hygiene training certificate. Must register with ARS.'}},
+{c:'NL',n:'Netherlands',lat:52.37,lng:4.9,lic:{lv:'high',t:'🔴 GGD license required (€250-400). Health inspection mandatory.'}},
+{c:'IT',n:'Italy',lat:41.9,lng:12.5,lic:{lv:'medium',t:'⚠️ Regional health authority authorization required.'}},
+{c:'AT',n:'Austria',lat:48.21,lng:16.37,lic:{lv:'medium',t:'⚠️ Trade license (Gewerbeschein) for Kosmetik required.'}},
+{c:'PL',n:'Poland',lat:52.23,lng:21.01,lic:{lv:'low',t:'No specific license. Must comply with Sanepid hygiene standards.'}},
+{c:'DK',n:'Denmark',lat:55.68,lng:12.57,lic:{lv:'high',t:'🔴 Must register with Danish Patient Safety Authority.'}},
+{c:'SE',n:'Sweden',lat:59.33,lng:18.07,lic:{lv:'medium',t:'⚠️ Must notify municipality health board.'}},
+{c:'BE',n:'Belgium',lat:50.85,lng:4.35,lic:{lv:'low',t:'No specific license. Royal Decree hygiene standards apply.'}},
+{c:'GR',n:'Greece',lat:37.98,lng:23.73,lic:{lv:'high',t:'🔴 Health certificate and business license required.'}},
+{c:'HR',n:'Croatia',lat:45.81,lng:15.98,lic:{lv:'low',t:'No specific license. General hygiene regulations apply.'}},
+{c:'HU',n:'Hungary',lat:47.5,lng:19.04,lic:{lv:'low',t:'No specific license. ÁNTSZ hygiene standards apply.'}}
+];
+
+var ST=[
+{id:1,n:"Blut und Eisen",d:"Prenzlauer Berg",lat:52.5387,lng:13.4183,p:50,r:4.9,sp:1,st:["Blackwork","Geometric"],ds:"Legendary blackwork studio. 30 years of history.",inc:"Full station, supplies, WiFi",br:["Your tattoo machine","Personal needles","Ink","Gloves","Stencil supplies"],img:STPH[0],ph:[STPH[0],STPH[1],STPH[2]]},
+{id:2,n:"OMEN Mitte",d:"Mitte",lat:52.5224,lng:13.4115,p:40,r:4.7,sp:3,st:["Realism","Fine Line","Cover-up"],ds:"One of Berlin's largest studios. Walk-ins welcome.",inc:"Station, booking system, aftercare",br:["Machine","Ink set","Gloves","Portfolio prints"],img:STPH[1],ph:[STPH[1],STPH[3],STPH[4]]},
+{id:3,n:"OMEN Kreuzberg",d:"Kreuzberg",lat:52.4995,lng:13.4235,p:40,r:4.7,sp:2,st:["Realism","Blackwork"],ds:"International artists. Cover-ups and scar coverage.",inc:"Station, supplies",br:["Machine","Needles","Ink","Gloves"],img:STPH[2],ph:[STPH[2],STPH[0],STPH[5]]},
+{id:4,n:"Berlin Ink",d:"Mitte",lat:52.5252,lng:13.4035,p:55,r:4.8,sp:2,st:["Dotwork","Blackwork","Realism"],ds:"Since 2004. Freehand specialists.",inc:"Premium station, photography",br:["Machine","Needles","Ink","Personal grip"],img:STPH[3],ph:[STPH[3],STPH[1],STPH[0]]},
+{id:5,n:"Bläckfisk Tattoo",d:"Kreuzberg",lat:52.4933,lng:13.4365,p:45,r:4.8,sp:2,st:["Fine Line","Illustrative","Blackwork"],ds:"Beloved Kreuzberg studio. Delicate illustrative work.",inc:"Station, espresso, WiFi",br:["Machine","Needles","Ink","Stencil paper"],img:STPH[4],ph:[STPH[4],STPH[2],STPH[5]]},
+{id:6,n:"NOIA Berlin",d:"Mitte",lat:52.528,lng:13.402,p:60,r:4.9,sp:1,st:["Contemporary","Fine Line","Abstract"],ds:"Private interdisciplinary art studio.",inc:"Private station, photography",br:["Full personal kit","Portfolio display"],img:STPH[5],ph:[STPH[5],STPH[0],STPH[3]]},
+{id:7,n:"Iron City",d:"Kreuzberg",lat:52.497,lng:13.412,p:45,r:4.6,sp:2,st:["Japanese","Realism"],ds:"Creative hub since 2012.",inc:"Station, booking support",br:["Machine","Needles","Ink","References"],img:STPH[0],ph:[STPH[0],STPH[4],STPH[2]]},
+{id:8,n:"Sacred Skin",d:"Kreuzberg",lat:52.492,lng:13.428,p:42,r:4.5,sp:2,st:["Blackwork","Geometric","Dotwork"],ds:"Underground vegan-friendly studio.",inc:"Station, WiFi, vegan snacks",br:["Machine","Vegan ink only","Needles"],img:STPH[1],ph:[STPH[1],STPH[5],STPH[3]]},
+{id:9,n:"Pechschwarz",d:"Kreuzberg",lat:52.488,lng:13.399,p:35,r:4.6,sp:3,st:["Traditional","Blackwork"],ds:"Walk-in specialists.",inc:"Station, walk-in flow",br:["Machine","Needles","Ink","Flash sheets"],img:STPH[2],ph:[STPH[2],STPH[4],STPH[0]]},
+{id:10,n:"Most Wanted",d:"Charlottenburg",lat:52.505,lng:13.324,p:45,r:4.5,sp:2,st:["Realism","Traditional"],ds:"Full-service tattoo and piercing studio.",inc:"Full station, aftercare",br:["Machine","Needles","Ink"],img:STPH[3],ph:[STPH[3],STPH[5],STPH[1]]},
+{id:11,n:"LSD Tattoo",d:"Charlottenburg",lat:52.502,lng:13.319,p:50,r:4.7,sp:1,st:["Fine Line","Realism","Japanese"],ds:"Established studio on Schlüterstraße.",inc:"Station, supplies",br:["Machine","Needles","Ink"],img:STPH[4],ph:[STPH[4],STPH[0],STPH[2]]},
+{id:12,n:"Life Story",d:"Charlottenburg",lat:52.504,lng:13.321,p:48,r:4.6,sp:2,st:["Fine Line","Lettering"],ds:"Founded by Korean artist Min Yoo.",inc:"Station, walk-in support",br:["Machine","Needles","Ink"],img:STPH[5],ph:[STPH[5],STPH[1],STPH[3]]},
+{id:13,n:"Ivory Tattoo",d:"Charlottenburg",lat:52.507,lng:13.327,p:55,r:4.8,sp:1,st:["Realism","Anime","Cover-up"],ds:"Award-winning artists.",inc:"Premium station, lighting",br:["Machine","Needles","Full ink palette"],img:STPH[0],ph:[STPH[0],STPH[2],STPH[4]]},
+{id:14,n:"Unikat Berlin",d:"Neukölln",lat:52.483,lng:13.437,p:38,r:4.6,sp:2,st:["Hand-poke","Abstract"],ds:"Tattoos + upcycling jewelry.",inc:"Station, retail space",br:["Hand-poke tools or machine","Ink"],img:STPH[1],ph:[STPH[1],STPH[3],STPH[5]]},
+{id:15,n:"Alter Schwan",d:"Friedrichshain",lat:52.518,lng:13.456,p:40,r:4.5,sp:2,st:["Traditional","Neo-Trad"],ds:"Bold, colorful traditional.",inc:"Station",br:["Machine","Needles","Color ink set"],img:STPH[2],ph:[STPH[2],STPH[0],STPH[4]]},
+{id:16,n:"Iron Cobra",d:"Friedrichshain",lat:52.515,lng:13.45,p:42,r:4.7,sp:1,st:["Old School","Traditional"],ds:"Precision old-school.",inc:"Station, premium hygiene",br:["Machine","Needles","Ink"],img:STPH[3],ph:[STPH[3],STPH[5],STPH[1]]},
+{id:17,n:"Black Cat",d:"Friedrichshain",lat:52.513,lng:13.458,p:35,r:4.4,sp:3,st:["Blackwork","Illustrative"],ds:"CoWorking space for freelance artists.",inc:"Station, shared space",br:["Full personal kit"],img:STPH[4],ph:[STPH[4],STPH[2],STPH[0]]},
+{id:18,n:"Eternity",d:"Niederschöneweide",lat:52.457,lng:13.513,p:30,r:4.8,sp:1,st:["Fine Line","Micro"],ds:"Master of micro-fine work.",inc:"Station, stencils",br:["Pen-style machine","Fine needles","Ink"],img:STPH[5],ph:[STPH[5],STPH[3],STPH[1]]},
+{id:19,n:"Brennnessel",d:"Kreuzberg",lat:52.495,lng:13.405,p:48,r:4.7,sp:1,st:["Contemporary","Blackwork"],ds:"AR visualization before tattooing.",inc:"Station, AR tech",br:["Machine","Needles","Ink","Digital designs"],img:STPH[0],ph:[STPH[0],STPH[4],STPH[5]]},
+{id:20,n:"Mugshot",d:"Neukölln",lat:52.481,lng:13.432,p:38,r:4.5,sp:2,st:["Traditional","Japanese"],ds:"Fun, art, diversity and community.",inc:"Station, events",br:["Machine","Needles","Ink"],img:STPH[1],ph:[STPH[1],STPH[2],STPH[3]]}
+];
+
+var STYL=["All","Blackwork","Realism","Traditional","Japanese","Fine Line","Geometric","Dotwork","Illustrative","Watercolor","Cover-up"];
+var selC='DE';
+
+var D={
+role:'a',loginRole:'a',fil:'All',rf:'All',cur:null,cr:null,msgs:{},_cb:'reqs',_ck:'',
+art:{
+  n:'Vlad Shevchenko',c:'Berlin, Germany',ig:'@shev.chenko_tattoo',exp:'5',
+  bio:'Illustrative tattoo artist based in Berlin. Blackwork, fine line, illustrative. Guest spots across Europe.',
+  st:['Blackwork','Illustrative','Fine Line'],
+  avatar:AVATARS[0],phone:'+49 176 1234567',email:'vlad@inkspot.com',telegram:'@vlad_ink',
+  minPrice:'80',available:true,guestSpots:true,photos:[...PH]
+},
+stu:{
+  n:'Dark Arts Studio',d:'Kreuzberg',c:'Berlin',addr:'Oranienstraße 45, Kreuzberg',
+  phone:'+49 30 9876543',email:'info@darkarts.de',ig:'@darkarts_berlin',telegram:'@darkarts',
+  website:'https://darkarts.de',hours:'11:00 — 20:00',days:'Mon — Sat',artists:'3',price:'40',spots:'2',
+  ds:'Boutique tattoo studio in the heart of Kreuzberg. Specializing in blackwork and contemporary styles.',
+  st:['Blackwork','Contemporary','Fine Line','Geometric'],piercing:true,freeCon:true,
+  cover:COVERS[0],photos:[STPH[0],STPH[1],STPH[2]]
+},
+rqs:[
+  {id:1,sid:5,sn:'Bläckfisk Tattoo',cy:'Kreuzberg',dt:'Apr 1-7',s:'accepted',rt:0},
+  {id:2,sid:1,sn:'Blut und Eisen',cy:'Prenzl. Berg',dt:'May 10-14',s:'pending',rt:0},
+  {id:3,sid:6,sn:'NOIA Berlin',cy:'Mitte',dt:'Jun 2-8',s:'declined',rt:0}
+],
+inc:[
+  {id:1,n:'Maria Santos',c:'Madrid',st:['Realism','Watercolor'],dt:'Mar 20-27',exp:'6',gs:'8',m:'Hi! I specialize in color realism.',av:'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&h=200&fit=crop&crop=face'},
+  {id:2,n:'Tom Wilson',c:'London',st:['Traditional'],dt:'Apr 5-12',exp:'10',gs:'15',m:'Experienced traditional artist from London.',av:'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&crop=face'},
+  {id:3,n:'Yuki Tanaka',c:'Tokyo',st:['Japanese','Blackwork'],dt:'Apr 15-30',exp:'12',gs:'20',m:'Japanese-style specialist. 2 week spot.',av:'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=200&h=200&fit=crop&crop=face'}
+]};
+
+var map=null,mks=[];
+var IC={s:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>',l:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 12l2 2 4-4"/></svg>',u:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M5 20c0-4 3.5-7 7-7s7 3 7 7"/></svg>'};
+
+function toast(m){var d=document.createElement('div');d.className='toast';d.textContent=m;document.body.appendChild(d);setTimeout(function(){d.remove()},2500)}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;')}
+
+function nvH(tp,a){var i=tp==='a'?[{id:'explore',c:IC.s,l:'Explore'},{id:'reqs',c:IC.l,l:'Requests'},{id:'prof',c:IC.u,l:'Profile'}]:[{id:'sdash',c:IC.l,l:'Requests'},{id:'sprof',c:IC.u,l:'Studio'}];return i.map(function(x){return'<button class="ni '+(a===x.id?'on':'')+'" onclick="go(\''+x.id+'\')">'+x.c+x.l+'</button>'}).join('')}
+function setN(a){['n1','n2','n3'].forEach(function(x){var e=document.getElementById(x);if(e)e.innerHTML=nvH('a',a)});['n4','n5'].forEach(function(x){var e=document.getElementById(x);if(e)e.innerHTML=nvH('s',a)})}
+
+function go(id){
+document.querySelectorAll('.s').forEach(function(x){x.classList.remove('on')});
+var e=document.getElementById('s-'+id);if(e)e.classList.add('on');
+if(id==='explore'){setN('explore');initCP();rExp();setTimeout(iMap,100);updLic()}
+if(id==='detail')rDtl();
+if(id==='reqs'){setN('reqs');rReqs()}
+if(id==='prof'){setN('prof');rProf()}
+if(id==='edit')rEdit();
+if(id==='sdash'){setN('sdash');rSD()}
+if(id==='sprof'){setN('sprof');rSP()}
+if(id==='sedit')rSE();
+if(id==='rdtl')rRD();
+}
+
+// AUTH
+function pR(r){D.role=r;var a=document.getElementById('ra'),b=document.getElementById('rs'),sf=document.getElementById('studioRegFields');
+a.style.cssText=r==='a'?'border:2px solid var(--ac);background:var(--abg)':'border:1px solid transparent';
+a.querySelector('.xs').className='xs fw6 '+(r==='a'?'cac':'ct2');
+b.style.cssText=r==='s'?'border:2px solid var(--ac);background:var(--abg)':'border:1px solid transparent';
+b.querySelector('.xs').className='xs fw6 '+(r==='s'?'cac':'ct2');
+sf.style.display=r==='s'?'block':'none'}
+function pL(r){D.loginRole=r;var a=document.getElementById('la'),b=document.getElementById('ls');
+a.style.cssText=r==='a'?'border:2px solid var(--ac);background:var(--abg)':'border:1px solid transparent';
+a.querySelector('.xs').className='xs fw6 '+(r==='a'?'cac':'ct2');
+b.style.cssText=r==='s'?'border:2px solid var(--ac);background:var(--abg)':'border:1px solid transparent';
+b.querySelector('.xs').className='xs fw6 '+(r==='s'?'cac':'ct2')}
+function doReg(){var nm=document.getElementById('rn').value;if(D.role==='a'){D.art.n=nm;go('explore')}else{var sn=document.getElementById('rsn');if(sn&&sn.value)D.stu.n=sn.value;go('sdash')}}
+function doLogin(){D.role=D.loginRole;if(D.role==='a')go('explore');else go('sdash')}
+
+// COUNTRY
+function initCP(){var s=document.getElementById('cPick');if(!s||s.options.length>0)return;CC.forEach(function(c){var o=document.createElement('option');o.value=c.c;o.textContent='📍 '+c.n;if(c.c===selC)o.selected=true;s.appendChild(o)})}
+function chgC(v){selC=v;updLic();rExp();var c=CC.find(function(x){return x.c===v});if(c&&map)map.setView([c.lat,c.lng],12)}
+function updLic(){var c=CC.find(function(x){return x.c===selC});if(!c)return;var e=document.getElementById('licBar');if(!e)return;e.innerHTML='<div class="lic-box lic-'+c.lic.lv+'"><div class="xs fw6" style="color:var(--'+(c.lic.lv==='low'?'gn':c.lic.lv==='medium'?'yw':'rd')+');margin-bottom:4px">'+(c.lic.lv==='low'?'✅':c.lic.lv==='medium'?'⚠️':'🔴')+' License — '+c.n+'</div><p class="xs ct2" style="line-height:1.5">'+c.lic.t+'</p></div>'}
+
+// MAP
+function iMap(){var c=document.getElementById('map');if(!c)return;if(map){map.invalidateSize();uMk();return}try{map=L.map('map',{zoomControl:false,attributionControl:false}).setView([52.505,13.405],12);L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{maxZoom:19,subdomains:'abcd'}).addTo(map);uMk()}catch(e){}}
+function uMk(){if(!map)return;mks.forEach(function(m){map.removeLayer(m)});mks=[];var ic=L.divIcon({className:'',html:'<div class="mcm"></div>',iconSize:[14,14],iconAnchor:[7,7]});gF().forEach(function(s){var m=L.marker([s.lat,s.lng],{icon:ic}).addTo(map);m.bindTooltip(s.n,{direction:'top',offset:[0,-8]});m.on('click',function(){D.cur=s;go('detail')});mks.push(m)})}
+
+// EXPLORE
+function gF(){var q=(document.getElementById('si')?document.getElementById('si').value:'').toLowerCase();var l=ST;if(D.fil!=='All')l=l.filter(function(s){return s.st.some(function(x){return x===D.fil})});if(q)l=l.filter(function(s){return(s.n+' '+s.d+' '+s.st.join(' ')).toLowerCase().indexOf(q)>=0});return l}
+
+function rExp(){
+document.getElementById('fl').innerHTML=STYL.map(function(s){return'<span class="tg '+(D.fil===s?'on':'')+'" onclick="D.fil=\''+s+'\';rExp();uMk()">'+s+'</span>'}).join('');
+var l=gF(),e=document.getElementById('sl');
+if(!l.length){e.innerHTML='<p class="ct2 sm tc" style="padding:40px 0">No studios found</p>';return}
+e.innerHTML='<p class="xs ct3 mb8">'+l.length+' studios</p>'+l.map(function(s){
+return'<div class="cd" onclick="D.cur=ST.find(function(x){return x.id==='+s.id+'});go(\'detail\')"><div class="f g12"><div class="studio-thumb"><img src="'+s.img+'" alt="'+esc(s.n)+'"></div><div class="f1" style="min-width:0"><div class="sm fw6">'+s.n+'</div><div class="xs ct2 mt4">'+s.d+'</div><div class="f ai g8 mt4"><span class="xs" style="color:var(--yw)">⭐ '+s.r+'</span><span class="xs ct3">·</span><span class="xs cac">€'+s.p+'/day</span></div><div class="xs mt4" style="color:var(--gn)">'+s.sp+' spot'+(s.sp>1?'s':'')+' open</div></div></div></div>'}).join('')}
+
+function filt(){rExp();uMk()}
+
+// DETAIL
+function rDtl(){
+var s=D.cur;if(!s)return;
+var hi=document.getElementById('dtlHi');
+hi.innerHTML='<img src="'+s.img+'" style="width:100%;height:100%;object-fit:cover"><button class="bk" onclick="go(\'explore\')">← Back</button><div class="hig"></div>';
+var sent=D.rqs.some(function(r){return r.sid===s.id});
+document.getElementById('db').innerHTML=
+'<div class="f ai g12 mb12" style="margin-top:-16px"><div class="studio-thumb" style="width:56px;height:56px;border:2px solid #000"><img src="'+s.img+'"></div><div class="f1"><div class="md fw7">'+s.n+'</div><div class="xs ct2">'+s.d+'</div></div><span class="sm" style="color:var(--yw)">⭐ '+s.r+'</span></div>'+
+'<div class="f g8 mb12" style="flex-wrap:wrap">'+s.st.map(function(x){return'<span class="tg" style="cursor:default">'+x+'</span>'}).join('')+'</div>'+
+'<p class="xs ct2 mb16" style="line-height:1.6">'+s.ds+'</p>'+
+'<div class="ib"><div class="ir"><span class="l">Price</span><span class="v ac">€'+s.p+' / day</span></div><div class="ir"><span class="l">Spots</span><span class="v">'+s.sp+'</span></div><div class="ir"><span class="l">Includes</span><span class="v">'+s.inc+'</span></div></div>'+
+'<div class="stt">What to bring</div><div class="ib"><ul class="checklist">'+s.br.map(function(x){return'<li>'+x+'</li>'}).join('')+'</ul></div>'+
+'<div class="stt">Studio Photos</div><div class="gr mb16">'+s.ph.map(function(u){return'<img src="'+u+'" style="width:100px;height:100px">'}).join('')+'</div>'+
+'<div class="stt">Reviews</div><div class="rc"><div class="f ai g8 mb4"><div class="av" style="width:26px;height:26px"><img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=60&h=60&fit=crop&crop=face"></div><span class="xs fw6">Guest Artist</span><span class="xs" style="color:var(--yw);margin-left:auto">⭐ 5.0</span></div><p class="xs ct2" style="line-height:1.5">Great studio, welcoming team!</p></div>'+
+'<button class="bt '+(sent?'bgg':'bp')+' mt16 mb8" '+(sent?'disabled':'')+' onclick="'+(sent?'':'oSnd()')+'">'+(sent?'✓ Request Sent':'Send Guest Spot Request')+'</button>'+
+'<button class="bt bo mb20" onclick="D._cb=\'detail\';D._ck=\'s'+s.id+'\';oChat(\''+s.n.replace(/'/g,"\\'")+'\')">💬 Message Studio</button>'}
+
+function oSnd(){var s=D.cur;if(!s)return;go('send');
+document.getElementById('snb').innerHTML=
+'<div class="cd mb16" style="cursor:default"><div class="f ai g12"><div class="studio-thumb" style="width:48px;height:48px"><img src="'+s.img+'"></div><div><div class="sm fw6">'+s.n+'</div><div class="xs ct2">'+s.d+'</div></div></div></div>'+
+'<div class="iw"><label>Start Date</label><input type="date" id="d1"></div>'+
+'<div class="iw"><label>End Date</label><input type="date" id="d2"></div>'+
+'<div class="iw"><label>Message</label><textarea id="rm" placeholder="Introduce yourself..."></textarea></div>'+
+'<div class="stt mt16">Portfolio (auto-attached)</div>'+
+'<div class="gr mb12">'+D.art.photos.slice(0,4).map(function(u){return'<img src="'+u+'">'}).join('')+'</div>'+
+'<a href="'+IG+'" target="_blank" class="ig-link mb16">📷 '+D.art.ig+'</a>'+
+'<button class="bt bp mb20" onclick="sndR()">Send Request</button>'}
+
+function sndR(){var s=D.cur,a=document.getElementById('d1'),b=document.getElementById('d2');var dt='TBD';if(a&&a.value&&b&&b.value){dt=new Date(a.value).toLocaleDateString('en',{month:'short',day:'numeric'})+' - '+new Date(b.value).toLocaleDateString('en',{month:'short',day:'numeric'})}D.rqs.unshift({id:Date.now(),sid:s.id,sn:s.n,cy:s.d,dt:dt,s:'pending',rt:0});document.getElementById('sm').textContent=s.n+' will review your request.';go('sent')}
+
+// REQUESTS
+function rReqs(){
+var fl=['All','Pending','Accepted','Declined'];
+document.getElementById('rt').innerHTML=fl.map(function(f){return'<span class="tg '+(D.rf===f?'on':'')+'" onclick="D.rf=\''+f+'\';rReqs()">'+f+'</span>'}).join('');
+var l=D.rqs;if(D.rf!=='All')l=l.filter(function(r){return r.s===D.rf.toLowerCase()});
+var e=document.getElementById('rl');
+if(!l.length){e.innerHTML='<p class="ct2 sm tc" style="padding:40px 0">No requests yet</p>';return}
+e.innerHTML=l.map(function(r){
+var st=ST.find(function(x){return x.id===r.sid});
+var img=st?st.img:STPH[0];
+return'<div class="cd" onclick="oRI('+r.sid+',\''+r.s+'\','+r.id+')"><div class="f ai g12"><div class="studio-thumb" style="width:48px;height:48px"><img src="'+img+'"></div><div class="f1"><div class="sm fw6">'+r.sn+'</div><div class="xs ct2">'+r.cy+' · '+r.dt+'</div></div><span class="st '+r.s+'">'+r.s[0].toUpperCase()+r.s.slice(1)+'</span></div></div>'}).join('')}
+
+function oRI(sid,status,rid){var s=ST.find(function(x){return x.id===sid});if(!s)return;if(status==='pending'){D._cb='reqs';D._ck='s'+sid;oChat(s.n);return}go('reqinfo');var rq=D.rqs.find(function(r){return r.id===rid});var stars=[1,2,3,4,5].map(function(i){return'<span class="star-rate" style="'+(rq&&rq.rt>=i?'':'opacity:.3')+'" onclick="rtS('+rid+','+i+')">⭐</span>'}).join(' ');
+var h='<div class="f ai g12 mb16"><div class="studio-thumb" style="width:56px;height:56px"><img src="'+s.img+'"></div><div class="f1"><div class="md fw7">'+s.n+'</div><div class="xs ct2">'+s.d+'</div></div><span class="st '+status+'">'+status[0].toUpperCase()+status.slice(1)+'</span></div>';
+if(status==='accepted'){h+='<div class="ib"><div class="ir"><span class="l">Price</span><span class="v ac">€'+s.p+'/day</span></div><div class="ir"><span class="l">Included</span><span class="v">'+s.inc+'</span></div></div><div class="stt">⚡ What to bring</div><div class="ib"><ul class="checklist">'+s.br.map(function(x){return'<li>'+x+'</li>'}).join('')+'</ul></div><button class="bt bo mb8" onclick="D._cb=\'reqinfo\';D._ck=\'s'+sid+'\';oChat(\''+s.n.replace(/'/g,"\\'")+'\')">💬 Message Studio</button>'}
+if(status==='declined'){h+='<div class="ib"><p class="xs ct2" style="line-height:1.6">This studio declined your request. Keep exploring!</p></div>'}
+h+='<div class="stt">Rate this studio</div><div class="ib tc">'+stars+'</div><button class="bt bp mb20" onclick="go(\'reqs\')">Back to Requests</button>';
+document.getElementById('rib').innerHTML=h}
+function rtS(rid,v){var r=D.rqs.find(function(x){return x.id===rid});if(r){r.rt=v;oRI(r.sid,r.s,r.id)}}
+
+// CHAT
+function oChat(name){go('chat');document.getElementById('chatT').textContent=name;var k=D._ck||'def';if(!D.msgs[k])D.msgs[k]=[{f:'me',t:'Hi! I\'m interested in a guest spot.',tm:'10:30'},{f:'them',t:'Hey! We\'d love to have you. When are you thinking?',tm:'10:32'}];rChat()}
+function rChat(){var k=D._ck||'def';var m=D.msgs[k]||[];document.getElementById('chatM').innerHTML=m.map(function(x){return'<div class="'+(x.f==='me'?'msg-me':'msg-them')+'"><div class="bubble">'+x.t+'</div><div class="xs ct3 mt4" style="text-align:'+(x.f==='me'?'right':'left')+'">'+x.tm+'</div></div>'}).join('');var e=document.getElementById('chatM');e.scrollTop=e.scrollHeight}
+function sndM(){var inp=document.getElementById('chatI');var t=inp.value.trim();if(!t)return;var k=D._ck||'def';if(!D.msgs[k])D.msgs[k]=[];var now=new Date();var tm=now.getHours()+':'+String(now.getMinutes()).padStart(2,'0');D.msgs[k].push({f:'me',t:t,tm:tm});inp.value='';rChat();setTimeout(function(){D.msgs[k].push({f:'them',t:'Thanks for your message! We\'ll get back to you shortly 🤘',tm:tm});rChat()},1500)}
+
+// ========== ARTIST PROFILE ==========
+function rProf(){var p=D.art;
+document.getElementById('pb').innerHTML=
+'<div class="tc mb12">'+
+  '<div class="av" style="width:80px;height:80px;margin:0 auto 10px"><img src="'+p.avatar+'"></div>'+
+  '<div class="lg fw7">'+p.n+'</div>'+
+  '<div class="xs ct2 mt4">📍 '+p.c+'</div>'+
+  '<div class="f ai mt4" style="justify-content:center;gap:8px"><span class="xs" style="color:var(--yw)">⭐ 4.8</span><span class="xs ct3">· '+p.exp+' yrs exp</span></div>'+
+'</div>'+
+'<div class="tc mb12"><a href="'+IG+'" target="_blank" class="ig-link">📷 '+p.ig+'</a></div>'+
+'<div class="f g8 mb12" style="justify-content:center;flex-wrap:wrap">'+p.st.map(function(s){return'<span class="tg" style="cursor:default">'+s+'</span>'}).join('')+'</div>'+
+'<p class="xs ct2 tc mb16" style="line-height:1.6">'+p.bio+'</p>'+
+'<div class="ib">'+
+  '<div class="ir"><span class="l">📱 Phone</span><span class="v">'+p.phone+'</span></div>'+
+  '<div class="ir"><span class="l">📧 Email</span><span class="v">'+p.email+'</span></div>'+
+  '<div class="ir"><span class="l">✈️ Telegram</span><span class="v">'+p.telegram+'</span></div>'+
+  '<div class="ir"><span class="l">💰 Min. price</span><span class="v ac">€'+p.minPrice+'/hr</span></div>'+
+  '<div class="ir"><span class="l">Status</span><span class="v" style="color:var(--'+(p.available?'gn':'rd')+')">'+(p.available?'🟢 Available':'🔴 Busy')+'</span></div>'+
+  (p.guestSpots?'<div class="ir"><span class="l">Guest spots</span><span class="v" style="color:var(--gn)">✅ Open</span></div>':'')+
+'</div>'+
+'<div class="stt">Portfolio</div><div class="pg mb16">'+p.photos.map(function(u){return'<img src="'+u+'">'}).join('')+'</div>'+
+'<div class="stt">Reviews</div><div class="rc mb20"><div class="f ai g8 mb4"><div class="av" style="width:26px;height:26px"><img src="'+STPH[4]+'"></div><span class="xs fw6">Bläckfisk Tattoo</span></div><p class="xs ct2" style="line-height:1.5">Professional, punctual, incredible work!</p></div>'}
+
+// ========== ARTIST EDIT ==========
+function rEdit(){var p=D.art;
+document.getElementById('eb').innerHTML=
+'<div class="f ai g12 mb20">'+
+  '<div class="ave" onclick="cycAv()"><div class="av" style="width:64px;height:64px"><img src="'+p.avatar+'"></div></div>'+
+  '<div><span class="cac xs fw6" style="cursor:pointer" onclick="cycAv()">Change Photo</span><p class="xs ct3 mt4">Tap to change</p></div>'+
+'</div>'+
+'<div class="iw"><label>Name</label><input id="en" value="'+esc(p.n)+'"></div>'+
+'<div class="iw"><label>Based in</label><input id="ec" value="'+esc(p.c)+'"></div>'+
+'<div class="iw"><label>Instagram</label><input id="ei" value="'+esc(p.ig)+'"></div>'+
+'<div class="iw"><label>Phone</label><input id="eph" value="'+esc(p.phone)+'"></div>'+
+'<div class="iw"><label>Email</label><input id="eem" value="'+esc(p.email)+'"></div>'+
+'<div class="iw"><label>Telegram</label><input id="etg" value="'+esc(p.telegram)+'"></div>'+
+'<div class="iw"><label>Experience (years)</label><input type="number" id="ee" value="'+esc(p.exp)+'"></div>'+
+'<div class="iw"><label>Min. price (€/hr)</label><input type="number" id="emp" value="'+esc(p.minPrice)+'"></div>'+
+'<div class="iw"><label>Bio</label><textarea id="ebi">'+esc(p.bio)+'</textarea></div>'+
+'<div class="tgr"><span class="sm">Available for booking</span><button class="tsw '+(p.available?'on':'')+'" onclick="D.art.available=!D.art.available;this.classList.toggle(\'on\')"></button></div>'+
+'<div class="tgr mb12"><span class="sm">Open for guest spots</span><button class="tsw '+(p.guestSpots?'on':'')+'" onclick="D.art.guestSpots=!D.art.guestSpots;this.classList.toggle(\'on\')"></button></div>'+
+'<div class="stt mt12">Styles</div>'+
+'<div class="f g8 mb16" style="flex-wrap:wrap">'+STYL.filter(function(s){return s!=='All'}).map(function(s){return'<span class="tg '+(p.st.indexOf(s)>=0?'on':'')+'" onclick="tS(this,\''+s+'\')">'+s+'</span>'}).join('')+'</div>'+
+'<div class="stt">Portfolio</div><div class="pge" id="apg">'+bPG(p.photos,'a')+'</div>'+
+'<div style="height:40px"></div>'}
+
+function bPG(ph,t){var h='';ph.forEach(function(u,i){h+='<div class="phi"><img src="'+u+'"><button class="phd" onclick="dPh(\''+t+'\','+i+')">✕</button></div>'});if(ph.length<9)h+='<div class="pha" onclick="aPh(\''+t+'\')"><span style="font-size:20px">+</span><span style="font-size:9px">Add</span></div>';return h}
+function dPh(t,i){if(t==='a'){D.art.photos.splice(i,1);document.getElementById('apg').innerHTML=bPG(D.art.photos,'a')}else{D.stu.photos.splice(i,1);document.getElementById('spg').innerHTML=bPG(D.stu.photos,'s')}}
+function aPh(t){var u=EXTRA_PH[Math.floor(Math.random()*EXTRA_PH.length)];if(t==='a'){D.art.photos.push(u);document.getElementById('apg').innerHTML=bPG(D.art.photos,'a')}else{D.stu.photos.push(u);document.getElementById('spg').innerHTML=bPG(D.stu.photos,'s')}}
+
+var _ai=0;
+function cycAv(){_ai=(_ai+1)%AVATARS.length;D.art.avatar=AVATARS[_ai];rEdit()}
+var _ci=0;
+function cycCov(){_ci=(_ci+1)%COVERS.length;D.stu.cover=COVERS[_ci];rSE()}
+
+function tS(e,s){var i=D.art.st.indexOf(s);if(i>=0)D.art.st.splice(i,1);else D.art.st.push(s);e.classList.toggle('on')}
+function tSS(e,s){var i=D.stu.st.indexOf(s);if(i>=0)D.stu.st.splice(i,1);else D.stu.st.push(s);e.classList.toggle('on')}
+
+function sP(){var g=function(id){var e=document.getElementById(id);return e?e.value:''};
+D.art.n=g('en')||D.art.n;D.art.c=g('ec')||D.art.c;D.art.ig=g('ei')||D.art.ig;
+D.art.phone=g('eph')||D.art.phone;D.art.email=g('eem')||D.art.email;D.art.telegram=g('etg')||D.art.telegram;
+D.art.exp=g('ee')||D.art.exp;D.art.minPrice=g('emp')||D.art.minPrice;D.art.bio=g('ebi')||D.art.bio;
+toast('✅ Profile saved!');go('prof')}
+
+// ========== STUDIO PROFILE ==========
+function rSP(){var s=D.stu;
+document.getElementById('spb').innerHTML=
+(s.cover?'<img src="'+s.cover+'" style="width:100%;height:140px;border-radius:16px;object-fit:cover;margin-bottom:12px">':'')+
+'<div class="tc mb12">'+
+  '<div class="lg fw7">'+s.n+'</div>'+
+  '<div class="xs ct2 mt4">📍 '+s.d+', '+s.c+'</div>'+
+  '<div class="xs ct3 mt4">'+s.addr+'</div>'+
+'</div>'+
+'<p class="xs ct2 tc mb12" style="line-height:1.6">'+s.ds+'</p>'+
+'<div class="f g8 mb12" style="justify-content:center;flex-wrap:wrap">'+s.st.map(function(x){return'<span class="tg" style="cursor:default">'+x+'</span>'}).join('')+'</div>'+
+'<div class="ib">'+
+  '<div class="ir"><span class="l">💰 Price</span><span class="v ac">€'+s.price+'/day</span></div>'+
+  '<div class="ir"><span class="l">🪑 Open spots</span><span class="v">'+s.spots+'</span></div>'+
+  '<div class="ir"><span class="l">👨‍🎨 Artists</span><span class="v">'+s.artists+'</span></div>'+
+  '<div class="ir"><span class="l">📱 Phone</span><span class="v">'+s.phone+'</span></div>'+
+  '<div class="ir"><span class="l">📧 Email</span><span class="v">'+s.email+'</span></div>'+
+  '<div class="ir"><span class="l">📸 Instagram</span><span class="v cac">'+s.ig+'</span></div>'+
+  '<div class="ir"><span class="l">✈️ Telegram</span><span class="v">'+s.telegram+'</span></div>'+
+  '<div class="ir"><span class="l">🌐 Website</span><span class="v cac">'+s.website+'</span></div>'+
+  '<div class="ir"><span class="l">🕐 Hours</span><span class="v">'+s.hours+'</span></div>'+
+  '<div class="ir"><span class="l">📅 Days</span><span class="v">'+s.days+'</span></div>'+
+  (s.piercing?'<div class="ir"><span class="l">Piercing</span><span class="v" style="color:var(--gn)">✅ Available</span></div>':'')+
+  (s.freeCon?'<div class="ir"><span class="l">Consultation</span><span class="v" style="color:var(--gn)">✅ Free</span></div>':'')+
+'</div>'+
+'<div class="stt">Studio Photos</div><div class="pg mb16">'+s.photos.map(function(u){return'<img src="'+u+'">'}).join('')+'</div>'+
+'<button class="bt bp mb20" onclick="toast(\'📢 Spot published!\')">📢 Publish Available Spot</button>'}
+
+// ========== STUDIO EDIT ==========
+function rSE(){var s=D.stu;
+document.getElementById('seb').innerHTML=
+'<div class="mb16" onclick="cycCov()" style="cursor:pointer;position:relative;border-radius:16px;overflow:hidden">'+
+  (s.cover?'<img src="'+s.cover+'" style="width:100%;height:130px;object-fit:cover">':'<div style="width:100%;height:130px;background:linear-gradient(135deg,#1a1a2e,#2d1b69);display:flex;align-items:center;justify-content:center"><span class="xs ct3">Tap to set cover</span></div>')+
+  '<div style="position:absolute;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;opacity:0;transition:.15s" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0"><span style="color:#fff;font-size:12px;font-weight:600">📷 Change Cover</span></div>'+
+'</div>'+
+'<div class="iw"><label>Studio Name</label><input id="sn" value="'+esc(s.n)+'"></div>'+
+'<div class="iw"><label>District</label><input id="sd" value="'+esc(s.d)+'"></div>'+
+'<div class="iw"><label>City</label><input id="sc" value="'+esc(s.c)+'"></div>'+
+'<div class="iw"><label>Address</label><input id="sa" value="'+esc(s.addr)+'"></div>'+
+'<div class="iw"><label>Phone</label><input id="sph" value="'+esc(s.phone)+'"></div>'+
+'<div class="iw"><label>Email</label><input id="sem" value="'+esc(s.email)+'"></div>'+
+'<div class="iw"><label>Instagram</label><input id="sig" value="'+esc(s.ig)+'"></div>'+
+'<div class="iw"><label>Telegram</label><input id="stg" value="'+esc(s.telegram)+'"></div>'+
+'<div class="iw"><label>Website</label><input id="swb" value="'+esc(s.website)+'"></div>'+
+'<div class="iw"><label>Working Hours</label><input id="shr" value="'+esc(s.hours)+'"></div>'+
+'<div class="iw"><label>Working Days</label><input id="sdy" value="'+esc(s.days)+'"></div>'+
+'<div class="iw"><label>Number of Artists</label><input type="number" id="sar" value="'+esc(s.artists)+'"></div>'+
+'<div class="iw"><label>Price (€/day)</label><input type="number" id="spr" value="'+esc(s.price)+'"></div>'+
+'<div class="iw"><label>Open Spots</label><input type="number" id="ssp" value="'+esc(s.spots)+'"></div>'+
+'<div class="iw"><label>Description</label><textarea id="sds">'+esc(s.ds)+'</textarea></div>'+
+'<div class="tgr"><span class="sm">Piercing available</span><button class="tsw '+(s.piercing?'on':'')+'" onclick="D.stu.piercing=!D.stu.piercing;this.classList.toggle(\'on\')"></button></div>'+
+'<div class="tgr mb12"><span class="sm">Free consultation</span><button class="tsw '+(s.freeCon?'on':'')+'" onclick="D.stu.freeCon=!D.stu.freeCon;this.classList.toggle(\'on\')"></button></div>'+
+'<div class="stt mt12">Styles</div>'+
+'<div class="f g8 mb16" style="flex-wrap:wrap">'+STYL.filter(function(x){return x!=='All'}).map(function(x){return'<span class="tg '+(s.st.indexOf(x)>=0?'on':'')+'" onclick="tSS(this,\''+x+'\')">'+x+'</span>'}).join('')+'</div>'+
+'<div class="stt">Studio Photos</div><div class="pge" id="spg">'+bPG(s.photos,'s')+'</div>'+
+'<div style="height:40px"></div>'}
+
+function sSP(){var g=function(id){var e=document.getElementById(id);return e?e.value:''};
+D.stu.n=g('sn')||D.stu.n;D.stu.d=g('sd')||D.stu.d;D.stu.c=g('sc')||D.stu.c;D.stu.addr=g('sa')||D.stu.addr;
+D.stu.phone=g('sph')||D.stu.phone;D.stu.email=g('sem')||D.stu.email;D.stu.ig=g('sig')||D.stu.ig;
+D.stu.telegram=g('stg')||D.stu.telegram;D.stu.website=g('swb')||D.stu.website;
+D.stu.hours=g('shr')||D.stu.hours;D.stu.days=g('sdy')||D.stu.days;D.stu.artists=g('sar')||D.stu.artists;
+D.stu.price=g('spr')||D.stu.price;D.stu.spots=g('ssp')||D.stu.spots;D.stu.ds=g('sds')||D.stu.ds;
+toast('✅ Studio saved!');go('sprof')}
+
+// STUDIO DASHBOARD
+function rSD(){var l=D.inc;document.getElementById('src').textContent=l.length+' new request'+(l.length!==1?'s':'');
+document.getElementById('srl').innerHTML=l.map(function(r,i){
+return'<div class="cd" onclick="D.cr=D.inc['+i+'];go(\'rdtl\')"><div class="f g12"><div class="av" style="width:56px;height:56px"><img src="'+(r.av||AVATARS[0])+'"></div><div class="f1"><div class="f jb ai"><span class="sm fw6">'+r.n+'</span><span class="pu" style="width:8px;height:8px;border-radius:50%;background:var(--ac);display:inline-block"></span></div><div class="xs ct2 mt4">From '+r.c+' · '+r.st[0]+'</div><div class="xs ct3 mt4">📅 '+r.dt+'</div></div></div></div>'}).join('')}
+
+function rRD(){var r=D.cr;if(!r)return;
+document.getElementById('rdb').innerHTML=
+'<div class="f ai g12 mb16"><div class="av" style="width:64px;height:64px"><img src="'+(r.av||AVATARS[0])+'"></div><div><div class="md fw7">'+r.n+'</div><div class="xs ct2">'+r.c+' · ⭐ 4.8</div></div></div>'+
+'<a href="'+IG+'" target="_blank" class="ig-link mb12">📷 View Instagram</a>'+
+'<div class="f g8 mb12" style="flex-wrap:wrap">'+r.st.map(function(s){return'<span class="tg" style="cursor:default">'+s+'</span>'}).join('')+'</div>'+
+'<div class="ib"><div class="ir"><span class="l">Dates</span><span class="v">'+r.dt+'</span></div><div class="ir"><span class="l">Experience</span><span class="v">'+r.exp+' years</span></div><div class="ir"><span class="l">Guest spots</span><span class="v">'+r.gs+'</span></div></div>'+
+'<div class="stt">Message</div><div class="ib"><p class="xs ct2" style="line-height:1.6">'+r.m+'</p></div>'+
+'<div class="stt">Portfolio</div><div class="pg mb20">'+PH.map(function(u){return'<img src="'+u+'">'}).join('')+'</div>'+
+'<div class="f g10 mb20"><button class="bt bo f1" onclick="D.inc=D.inc.filter(function(x){return x!==D.cr});toast(\'Declined\');go(\'sdash\')">Decline</button><button class="bt bp f1" onclick="D.inc=D.inc.filter(function(x){return x!==D.cr});toast(\'✅ Accepted!\');go(\'sdash\')">Accept</button></div>'}
+
+go('welcome');
+</script>
+</body>
+</html>
